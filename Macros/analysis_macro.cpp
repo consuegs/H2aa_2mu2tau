@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
 	// Higgs pt reweighting
 	const string higgsPtFileName = cfg.get<string> ("HiggsPtFileName");
 	TString HiggsPtFileName(higgsPtFileName);
-	const bool isVH = cfg.get<bool>("IsVH");
+	const bool isVH = cfg.get<bool> ("IsVH");
 	// **********end of configuration *******************
 
 	std::ifstream fileList(argv[2]);
@@ -388,7 +388,7 @@ int main(int argc, char *argv[])
 	int nTrackCat = 3;
 
 	TH1D *triggerWeightH = new TH1D("triggerWeightH", "", 100, 0, 2);
-	TH1D *effTrkWeightH = new TH1D("effTrkWeightH", "", 100, 0, 2);
+	TH1D *idIsoWeightH = new TH1D("idIsoWeightH", "", 100, 0, 2);
 	TH1D *HiggsPtWeightH = new TH1D("HiggsPtWeightH", "", 100, 0, 2);
 
 	//////////////////Tracks///////////////////////////
@@ -752,46 +752,54 @@ int main(int argc, char *argv[])
 	PUofficial->set_h_MC(PU_mc);
 
 	// Higgs reweighting
-    TString fullpath_HiggsPtFile = TString(cmsswBase)+"/src/DesyTauAnalyses/NTupleMaker/data/"+HiggsPtFileName;
-    TFile * higgsPtFile = NULL;
-    TH1D * higgsPtH = NULL;
-    TH1D * higgsPt_WPlusH = NULL;
-    TH1D * higgsPt_WMinusH = NULL;
-    TH1D * higgsPt_ZH = NULL;
-    if (applyHiggsPtWeight) { 
-      std::cout << "ApplyHiggsPtWeight = " << applyHiggsPtWeight << std::endl;
-      higgsPtFile = new TFile(fullpath_HiggsPtFile);
-      if (higgsPtFile->IsZombie()) {
-        std::cout << fullpath_HiggsPtFile << "  not found" << std::endl;
-        exit(-1);
-      }
-      if (isVH) {
-        std::cout << "IsVH = " << isVH << std::endl;
-        higgsPt_WPlusH = (TH1D*)higgsPtFile->Get("kfactor_WplusH");
-        higgsPt_WMinusH = (TH1D*)higgsPtFile->Get("kfactor_WminusH");
-        higgsPt_ZH = (TH1D*)higgsPtFile->Get("kfactor_ZH");
-        if (higgsPt_WPlusH==NULL) {
-	      std::cout << "histogram kfactor_WplusH is not found in file " << fullpath_HiggsPtFile << std::endl;
-	      exit(-1);
-        }
-        if (higgsPt_WMinusH==NULL) {
-	      std::cout << "histogram kfactor_WminusH is not found in file " << fullpath_HiggsPtFile << std::endl;
-	      exit(-1);
-        }
-        if (higgsPt_ZH==NULL) {
-	      std::cout << "histogram kfactor_ZH is not found in file " << fullpath_HiggsPtFile << std::endl;
-	      exit(-1);
-        }
-      }
-      else {
-        higgsPtH = (TH1D*)higgsPtFile->Get("kfactor");
-        if (higgsPtH==NULL) {
-	       std::cout << "histogram kfactor is not found in file " << fullpath_HiggsPtFile << std::endl;
-	       exit(-1);	
-        }
-      }
-    }
-  //  std::cout << "Higgs Pt histogram : " << higgsPtH << std::endl;
+	TString fullpath_HiggsPtFile = TString(cmsswBase) + "/src/DesyTauAnalyses/NTupleMaker/data/" + HiggsPtFileName;
+	TFile *higgsPtFile = NULL;
+	TH1D *higgsPtH = NULL;
+	TH1D *higgsPt_WPlusH = NULL;
+	TH1D *higgsPt_WMinusH = NULL;
+	TH1D *higgsPt_ZH = NULL;
+	if (applyHiggsPtWeight)
+	{
+		std::cout << "ApplyHiggsPtWeight = " << applyHiggsPtWeight << std::endl;
+		higgsPtFile = new TFile(fullpath_HiggsPtFile);
+		if (higgsPtFile->IsZombie())
+		{
+			std::cout << fullpath_HiggsPtFile << "  not found" << std::endl;
+			exit(-1);
+		}
+		if (isVH)
+		{
+			std::cout << "IsVH = " << isVH << std::endl;
+			higgsPt_WPlusH = (TH1D*) higgsPtFile->Get("kfactor_WplusH");
+			higgsPt_WMinusH = (TH1D*) higgsPtFile->Get("kfactor_WminusH");
+			higgsPt_ZH = (TH1D*) higgsPtFile->Get("kfactor_ZH");
+			if (higgsPt_WPlusH == NULL)
+			{
+				std::cout << "histogram kfactor_WplusH is not found in file " << fullpath_HiggsPtFile << std::endl;
+				exit(-1);
+			}
+			if (higgsPt_WMinusH == NULL)
+			{
+				std::cout << "histogram kfactor_WminusH is not found in file " << fullpath_HiggsPtFile << std::endl;
+				exit(-1);
+			}
+			if (higgsPt_ZH == NULL)
+			{
+				std::cout << "histogram kfactor_ZH is not found in file " << fullpath_HiggsPtFile << std::endl;
+				exit(-1);
+			}
+		}
+		else
+		{
+			higgsPtH = (TH1D*) higgsPtFile->Get("kfactor");
+			if (higgsPtH == NULL)
+			{
+				std::cout << "histogram kfactor is not found in file " << fullpath_HiggsPtFile << std::endl;
+				exit(-1);
+			}
+		}
+	}
+	//  std::cout << "Higgs Pt histogram : " << higgsPtH << std::endl;
 
 	std::string BTagCalibFileName;
 	if (year == 2016) BTagCalibFileName = "DeepCSV_2016LegacySF_V1";
@@ -805,9 +813,15 @@ int main(int argc, char *argv[])
 
 	// B-Tagging reweighting
 	BTagCalibration calib("DeepCSV", cmsswBase + "/src/DesyTauAnalyses/NTupleMaker/data/" + BTagCalibFileName + ".csv");
-	BTagCalibrationReader reader_B(BTagEntry::OP_MEDIUM, "central",{"up","down"});
-	BTagCalibrationReader reader_C(BTagEntry::OP_MEDIUM, "central",{"up","down"});
-	BTagCalibrationReader reader_L(BTagEntry::OP_MEDIUM, "central",{"up","down"});
+	BTagCalibrationReader reader_B(BTagEntry::OP_MEDIUM, "central",
+	{
+		"up", "down" });
+	BTagCalibrationReader reader_C(BTagEntry::OP_MEDIUM, "central",
+	{
+		"up", "down" });
+	BTagCalibrationReader reader_L(BTagEntry::OP_MEDIUM, "central",
+	{
+		"up", "down" });
 	reader_B.load(calib, BTagEntry::FLAV_B, "comb");
 	reader_C.load(calib, BTagEntry::FLAV_C, "comb");
 	reader_L.load(calib, BTagEntry::FLAV_UDSG, "comb");
@@ -957,9 +971,9 @@ int main(int argc, char *argv[])
 			tree_->SetBranchAddress("genparticles_status", genparticles_status);
 			tree_->SetBranchAddress("genparticles_info", genparticles_info);
 		}
-		
+
 		TString sample(argv[2]);
-        bool is4tau = sample.Contains("ToAA_AToTauTau");
+		bool is4tau = sample.Contains("ToAA_AToTauTau");
 
 		int numberOfCandidates = tree_->GetEntries();
 
@@ -1043,7 +1057,7 @@ int main(int argc, char *argv[])
 					if (genparticles_pdgid[iP] == -24) isWminus = true;
 					if (genparticles_pdgid[iP] == 23) isZ = true;
 				}
-				// if (posMuon.size()==1&&negMuon.size()==1&&posPion.size()==1&&negPion.size()==1) {       	//std::cout << "H->aa->2mu2tau : " << std::endl;
+				// if (posMuon.size()==1&&negMuon.size()==1&&posPion.size()==1&&negPion.size()==1) {         	//std::cout << "H->aa->2mu2tau : " << std::endl;
 				//std::cout << "Number of mu-   : " << negMuon.size() << std::endl;
 				//std::cout << "Number of mu+   : " << posMuon.size() << std::endl;
 				//std::cout << "Number of pion- : " << negPion.size() << std::endl;
@@ -1114,27 +1128,29 @@ int main(int argc, char *argv[])
 					genparticles_e[higgsIndex]);
 				higgsPt = higgsLV.Pt();
 				higgsTree->Fill();
-				
-                if (applyHiggsPtWeight&&is4tau) 
-                {
-	            double HiggsPtForWeighting = higgsPt;
-	            if (higgsPt>500) HiggsPtForWeighting = 499;
-	            double higgsPtWeight = 1;
-	            if (isVH) {
-	              if (isWplus)
-	                 higgsPtWeight = higgsPt_WPlusH->GetBinContent(higgsPt_WPlusH->FindBin(HiggsPtForWeighting));
-	              if (isWminus)
-	                 higgsPtWeight = higgsPt_WMinusH->GetBinContent(higgsPt_WMinusH->FindBin(HiggsPtForWeighting));
-	              if (isZ)
-	                 higgsPtWeight = higgsPt_ZH->GetBinContent(higgsPt_ZH->FindBin(HiggsPtForWeighting));
-	             }
-	             else {
-	               higgsPtWeight = higgsPtH->GetBinContent(higgsPtH->FindBin(HiggsPtForWeighting));
-	             }
-	             weight *= higgsPtWeight;
-	             HiggsPtWeightH->Fill(higgsPtWeight);
-	             //	   std::cout << "HiggsPt weight (Pythia) = " << higgsPtWeight << std::endl;
-               }
+
+				if (applyHiggsPtWeight && is4tau)
+				{
+					double HiggsPtForWeighting = higgsPt;
+					if (higgsPt > 500) HiggsPtForWeighting = 499;
+					double higgsPtWeight = 1;
+					if (isVH)
+					{
+						if (isWplus)
+							higgsPtWeight = higgsPt_WPlusH->GetBinContent(higgsPt_WPlusH->FindBin(HiggsPtForWeighting));
+						if (isWminus)
+							higgsPtWeight = higgsPt_WMinusH->GetBinContent(higgsPt_WMinusH->FindBin(HiggsPtForWeighting));
+						if (isZ)
+							higgsPtWeight = higgsPt_ZH->GetBinContent(higgsPt_ZH->FindBin(HiggsPtForWeighting));
+					}
+					else
+					{
+						higgsPtWeight = higgsPtH->GetBinContent(higgsPtH->FindBin(HiggsPtForWeighting));
+					}
+					weight *= higgsPtWeight;
+					HiggsPtWeightH->Fill(higgsPtWeight);
+					//	   std::cout << "HiggsPt weight (Pythia) = " << higgsPtWeight << std::endl;
+				}
 			}
 
 			if (HiggsSMFound)
@@ -1145,18 +1161,18 @@ int main(int argc, char *argv[])
 					genparticles_pz[higgsSMIndex],
 					genparticles_e[higgsSMIndex]);
 				higgsSMPt = higgsLV.Pt();
-				
-				if (applyHiggsPtWeight&&!is4tau)
-	               {
-                     double HiggsPtForWeighting = higgsSMPt;
-                     if (higgsSMPt>500) HiggsPtForWeighting = 499;
-                     double higgsPtWeight = 1;
-	                 higgsPtWeight = higgsPtH->GetBinContent(higgsPtH->FindBin(HiggsPtForWeighting));
-	                 weight *= higgsPtWeight;
-	                 HiggsPtWeightH->Fill(higgsPtWeight);
-	                 //	   std::cout << "HiggsPt weight (Madgraph) = " << higgsPtWeight << std::endl;
-	               }
-				
+
+				if (applyHiggsPtWeight && !is4tau)
+				{
+					double HiggsPtForWeighting = higgsSMPt;
+					if (higgsSMPt > 500) HiggsPtForWeighting = 499;
+					double higgsPtWeight = 1;
+					higgsPtWeight = higgsPtH->GetBinContent(higgsPtH->FindBin(HiggsPtForWeighting));
+					weight *= higgsPtWeight;
+					HiggsPtWeightH->Fill(higgsPtWeight);
+					//	   std::cout << "HiggsPt weight (Madgraph) = " << higgsPtWeight << std::endl;
+				}
+
 				higgsSMTree->Fill();
 			}
 
@@ -1202,29 +1218,6 @@ int main(int argc, char *argv[])
 			}
 			puWeightH->Fill(puweight, 1.0);
 			weight *= puweight;
-
-			// checking if dimuon trigger bit is ON
-			//     bool isDimuonTrigger = false;
-			//     for (std::map<string,int>::iterator it=hltriggerresults->begin(); it!=hltriggerresults->end(); ++it) {      	//       TString trigName(it->first);
-			//       if (trigName.Contains(DiMuonTriggerName)) {      	//  if (it->second==1)
-			//    isDimuonTrigger = true;
-			//       }
-			//     }
-			//     if (!isDimuonTrigger) continue;
-
-			//     unsigned int ntrig = hltriggerresults->size();
-			//     std::cout << "ntrig = " << ntrig << std::endl;
-			//     for (std::map<string,int>::iterator it=hltriggerresults->begin(); it!=hltriggerresults->end(); ++it)
-			//       std::cout << it->first << "  :  "  << it->second << std::endl;
-			//     std::cout << std::endl;
-
-			//     unsigned int npres = hltriggerprescales->size();
-			//     std::cout << "npres = " << npres << std::endl;
-			//     for (std::map<string,int>::iterator it=hltriggerprescales->begin(); it!=hltriggerprescales->end(); ++it)
-			//       std::cout << it->first << "  :  "  << it->second << std::endl;
-			//     std::cout << std::endl;
-
-			// finding HLT filters in the HLT Filter library
 
 			unsigned int nIsoMu24 = 0;
 
@@ -1529,34 +1522,27 @@ int main(int argc, char *argv[])
 			double triggerWeight = 1;
 			double muIdLWeight = 1;
 			double muIdTWeight = 1;
-			double effTrkLWeight = 1;
-			double effTrkTWeight = 1;
+			double idIsoWeightL = 1;
+			double idIsoWeightT = 1;
 
-           // *******************************************************
-           //   Trigger efficiency, MuonID, and tracking efficiencies
-           // ******************************************************* 
-     
+			// *******************************************************
+			//   Trigger efficiency, MuonID, and tracking efficiencies
+			// *******************************************************
+
 			if (!isData)
 			{
-				double ptMuon = ptIsoMuon24Cut;
-				double etaMuon = 1.;
 
-				//// mu1 matches trigger object and is leading muon////////////
-				if (mu1MatchIsoMu24 && muLPtCut && muon_pt[iAmumu1candidate] > ptMuon)
-				{
-					ptMuon = muon_pt[iAmumu1candidate];
-					etaMuon = muon_eta[iAmumu1candidate];
-				}
-				//// mu2 matches trigger object and is leading muon	////////////
-				if (mu2MatchIsoMu24 && muTPtCut && muon_pt[iAmumu2candidate] > ptMuon)
-				{
-					ptMuon = muon_pt[iAmumu2candidate];
-					etaMuon = muon_eta[iAmumu2candidate];
-				}
+				double effDataMu1 = SF_muon24->get_EfficiencyData(muon_pt[iAmumu1candidate], muon_eta[iAmumu1candidate]);
 
-				double trigWeightData = SF_muon24->get_EfficiencyData(ptMuon, etaMuon);
+				double effMCMu1 = SF_muon24->get_EfficiencyMC(muon_pt[iAmumu1candidate], muon_eta[iAmumu1candidate]);
 
-				double trigWeightMC = SF_muon24->get_EfficiencyMC(ptMuon, etaMuon);
+				double effDataMu2 = SF_muon24->get_EfficiencyData(muon_pt[iAmumu2candidate], muon_eta[iAmumu2candidate]);
+
+				double effMCMu2 = SF_muon24->get_EfficiencyMC(muon_pt[iAmumu2candidate], muon_eta[iAmumu2candidate]);
+
+				double trigWeightData = effDataMu1 + effDataMu2 - effDataMu1 * effDataMu2;
+
+				double trigWeightMC = effMCMu1 + effMCMu2 - effMCMu1 * effMCMu2;
 
 				if (applyTriggerMatch)
 				{
@@ -1566,16 +1552,18 @@ int main(int argc, char *argv[])
 
 				correctionWS->var("m_pt")->setVal(muon_pt[iAmumu1candidate]);
 				correctionWS->var("m_eta")->setVal(muon_eta[iAmumu1candidate]);
-				effTrkLWeight = correctionWS->function("m_trk_ratio")->getVal();
+				correctionWS->var("m_iso")->setVal(0.0);
+				idIsoWeightL = correctionWS->function("m_idiso_ic_ratio")->getVal();
 				correctionWS->var("m_pt")->setVal(muon_pt[iAmumu2candidate]);
 				correctionWS->var("m_eta")->setVal(muon_eta[iAmumu2candidate]);
-				effTrkTWeight = correctionWS->function("m_trk_ratio")->getVal();
+				correctionWS->var("m_iso")->setVal(0.0);
+				idIsoWeightT = correctionWS->function("m_idiso_ic_ratio")->getVal();
 			}
 
 			triggerWeightH->Fill(triggerWeight, 1.0);
 			weight *= triggerWeight;
-			effTrkWeightH->Fill(effTrkLWeight * effTrkTWeight, 1.0);
-			weight = weight * effTrkLWeight * effTrkTWeight;
+			idIsoWeightH->Fill(idIsoWeightL * idIsoWeightT, 1.0);
+			weight = weight *idIsoWeightL * idIsoWeightT;
 
 			TLorentzVector Amumu1candidate4;
 			Amumu1candidate4.SetXYZM(muon_px[iAmumu1candidate],
@@ -1952,18 +1940,16 @@ int main(int argc, char *argv[])
 					!signalRegion;
 
 				bool control00_0SemiIsoorSemiIso0 = trkAmumu1candidate.size() == 0 && trkAmumu2candidate.size() == 0 &&
-				    (
-				    (trkAtautau1candidate.size() == 0 &&
-				    soft_trkAtautau2candidate.size() == trkAtautau2candidate.size()) 
-				    ||
-					(trkAtautau2candidate.size() == 0 &&
-				    soft_trkAtautau1candidate.size() == trkAtautau1candidate.size())
-				    ) &&
-					!signalRegion;	
+					((trkAtautau1candidate.size() == 0 &&
+							soft_trkAtautau2candidate.size() == trkAtautau2candidate.size()) ||
+						(trkAtautau2candidate.size() == 0 &&
+							soft_trkAtautau1candidate.size() == trkAtautau1candidate.size())
+				) &&
+					!signalRegion;
 
-			   	bool control00_0NorN0 = trkAmumu1candidate.size() == 0 && trkAmumu2candidate.size() == 0 &&
-			   	    (trkAtautau1candidate.size() == 0  || trkAtautau2candidate.size() == 0) &&
-					!signalRegion;	
+				bool control00_0NorN0 = trkAmumu1candidate.size() == 0 && trkAmumu2candidate.size() == 0 &&
+					(trkAtautau1candidate.size() == 0 || trkAtautau2candidate.size() == 0) &&
+					!signalRegion;
 
 				/////////////////////////****************///////////////////////////////
 				//////********filling histograms by Regions &Categories ********//////
@@ -2042,12 +2028,8 @@ int main(int argc, char *argv[])
 						std::cout << "year is not 2016, 2017, 2018 - exiting" << '\n';
 						exit(-1);
 					}
-					//double muIsoLWeight = SF_muonIso->get_ScaleFactor(muon_pt[iAmumu1candidate], muon_eta[iAmumu1candidate]);
-					//double muIsoTWeight = SF_muonIso->get_ScaleFactor(muon_pt[iAmumu2candidate], muon_eta[iAmumu2candidate]);
 
 					if (!isData) weight *= scaleFIso * scaleFIso;
-					//if (!isData) weight *= muIsoLWeight;
-					//if (!isData) weight *= muIsoTWeight;
 					////////////////////////////////////////////////////////////////////
 					/////////////////////////////////////////////////////
 
