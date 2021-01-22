@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
 
 	// kinematic cuts on muons
 	const float ptGoodMuonCut = cfg.get<float> ("ptGoodMuonCut");
-	const float ptIsoMuon24Cut = cfg.get<float> ("ptIsoMuon24Cut");
+	const float ptIsoMuonCut = cfg.get<float> ("ptIsoMuonCut");
 	const float etaMuonCut = cfg.get<float> ("etaMuonCut");
 	const float dxyMuonCut = cfg.get<float> ("dxyMuonCut");
 	const float dzMuonCut = cfg.get<float> ("dzMuonCut");
@@ -214,16 +214,16 @@ int main(int argc, char *argv[])
 	// trigger
 	const bool applyTriggerMatch = cfg.get<bool> ("ApplyTriggerMatch");
 
-	///IsoMu24///
-	const string isomu24TriggerName = cfg.get<string> ("IsoMu24TriggerName");
-	const string isomu24FilterName = cfg.get<string> ("IsoMu24FilterName");
+	// IsoTkMu24 (2016), IsoMu27 (2017), IsoMu24 (2018) 
+	const string isomuTriggerName = cfg.get<string> ("IsoMuTriggerName");
+	const string isomuFilterName = cfg.get<string> ("IsoMuFilterName");
 
 	// trigger matching
 	const float DRTrigMatch = cfg.get<float> ("DRTrigMatch");
 	const unsigned int numberOfMuons = cfg.get < unsigned int > ("NumberOfMuons");
 
-	TString IsoMu24TriggerName(isomu24TriggerName);
-	TString IsoMu24FilterName(isomu24FilterName);
+	TString IsoMuTriggerName(isomuTriggerName);
+	TString IsoMuFilterName(isomuFilterName);
 
 	const string pileUpDataFile = cfg.get<string> ("PileUpDataFileName");
 	const string pileUpMCFile = cfg.get<string> ("PileUpMCFileName");
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
 	TString PileUpDataFile(pileUpDataFile);
 	TString PileUpMCFile(pileUpMCFile);
 
-	const string MuIso24TriggerFile = cfg.get<string> ("MuIso24TriggerEffFile");
+	const string MuIsoTriggerFile = cfg.get<string> ("MuonTriggerEffFile");
 	const string CorrectionWSFileName = cfg.get<string> ("CorrectionWorkspaceFileName");
 
 	// Higgs pt reweighting
@@ -827,8 +827,8 @@ int main(int argc, char *argv[])
 	reader_L.load(calib, BTagEntry::FLAV_UDSG, "comb");
 
 	// Trigger efficiency
-	ScaleFactor *SF_muon24 = new ScaleFactor();
-	SF_muon24->init_ScaleFactor(TString(cmsswBase) + "/src/" + TString(MuIso24TriggerFile));
+	ScaleFactor *SF_muon = new ScaleFactor();
+	SF_muon->init_ScaleFactor(TString(cmsswBase) + "/src/" + TString(MuIsoTriggerFile));
 
 	// Load CrystalBallEfficiency class
 	TString pathToCrystalLib = (TString) cmsswBase + "/src/HTT-utilities/CorrectionsWorkspace/CrystalBallEfficiency_cxx.so";
@@ -1219,25 +1219,25 @@ int main(int argc, char *argv[])
 			puWeightH->Fill(puweight, 1.0);
 			weight *= puweight;
 
-			unsigned int nIsoMu24 = 0;
+			unsigned int nIsoMu = 0;
 
-			bool isIsoMu24Filter = false;
+			bool isIsoMuFilter = false;
 
 			unsigned int nfilters = hltfilters->size();
 			for (unsigned int i = 0; i < nfilters; ++i)
 			{
 			 	//       std::cout << hltfilters->at(i) << std::endl;
 				TString HLTFilter(hltfilters->at(i));
-				if (HLTFilter == IsoMu24FilterName)
+				if (HLTFilter == IsoMuFilterName)
 				{
-					nIsoMu24 = i;
-					isIsoMu24Filter = true;
+					nIsoMu = i;
+					isIsoMuFilter = true;
 				}
 			}
 
-			if (!isIsoMu24Filter)
+			if (!isIsoMuFilter)
 			{
-				cout << "Filter " << IsoMu24FilterName << " not found " << endl;
+				cout << "Filter " << IsoMuFilterName << " not found " << endl;
 				exit(-1);
 			}
 
@@ -1482,36 +1482,36 @@ int main(int argc, char *argv[])
 			//////************Here SM Trigger ************//////
 			////////////////////////////////////////////////////
 
-			bool mu1MatchIsoMu24 = false;
+			bool mu1MatchIsoMu = false;
 
 			for (unsigned int iT = 0; iT < trigobject_count; ++iT)
 			{
 				float dRtrig = deltaR(muon_eta[iAmumu1candidate], muon_phi[iAmumu1candidate],
 					trigobject_eta[iT], trigobject_phi[iT]);
 				if (dRtrig > DRTrigMatch) continue;
-				if (trigobject_filters[iT][nIsoMu24])
-					mu1MatchIsoMu24 = true;
+				if (trigobject_filters[iT][nIsoMu])
+					mu1MatchIsoMu = true;
 			}
 
-			bool mu2MatchIsoMu24 = false;
+			bool mu2MatchIsoMu = false;
 
 			for (unsigned int iT = 0; iT < trigobject_count; ++iT)
 			{
 				float dRtrig = deltaR(muon_eta[iAmumu2candidate], muon_phi[iAmumu2candidate],
 					trigobject_eta[iT], trigobject_phi[iT]);
 				if (dRtrig > DRTrigMatch) continue;
-				if (trigobject_filters[iT][nIsoMu24])
-					mu2MatchIsoMu24 = true;
+				if (trigobject_filters[iT][nIsoMu])
+					mu2MatchIsoMu = true;
 			}
 
-			bool muLPtCut = muon_pt[iAmumu1candidate] > ptIsoMuon24Cut && fabs(muon_eta[iAmumu1candidate]) < etaMuonCut;
-			bool muTPtCut = muon_pt[iAmumu2candidate] > ptIsoMuon24Cut && fabs(muon_eta[iAmumu2candidate]) < etaMuonCut;
+			bool muLPtCut = muon_pt[iAmumu1candidate] > ptIsoMuonCut && fabs(muon_eta[iAmumu1candidate]) < etaMuonCut;
+			bool muTPtCut = muon_pt[iAmumu2candidate] > ptIsoMuonCut && fabs(muon_eta[iAmumu2candidate]) < etaMuonCut;
 
 			// trigger condition
 			bool isTriggerMatched = true;
 			if (applyTriggerMatch)
 			{
-				isTriggerMatched = (mu1MatchIsoMu24 && muLPtCut) || (mu2MatchIsoMu24 && muTPtCut);
+				isTriggerMatched = (mu1MatchIsoMu && muLPtCut) || (mu2MatchIsoMu && muTPtCut);
 			}
 			else
 			{
@@ -1520,8 +1520,6 @@ int main(int argc, char *argv[])
 			if (!isTriggerMatched) continue;
 
 			double triggerWeight = 1;
-			double muIdLWeight = 1;
-			double muIdTWeight = 1;
 			double idIsoWeightL = 1;
 			double idIsoWeightT = 1;
 
@@ -1532,13 +1530,13 @@ int main(int argc, char *argv[])
 			if (!isData)
 			{
 
-				double effDataMu1 = SF_muon24->get_EfficiencyData(muon_pt[iAmumu1candidate], muon_eta[iAmumu1candidate]);
+				double effDataMu1 = SF_muon->get_EfficiencyData(muon_pt[iAmumu1candidate], muon_eta[iAmumu1candidate]);
 
-				double effMCMu1 = SF_muon24->get_EfficiencyMC(muon_pt[iAmumu1candidate], muon_eta[iAmumu1candidate]);
+				double effMCMu1 = SF_muon->get_EfficiencyMC(muon_pt[iAmumu1candidate], muon_eta[iAmumu1candidate]);
 
-				double effDataMu2 = SF_muon24->get_EfficiencyData(muon_pt[iAmumu2candidate], muon_eta[iAmumu2candidate]);
+				double effDataMu2 = SF_muon->get_EfficiencyData(muon_pt[iAmumu2candidate], muon_eta[iAmumu2candidate]);
 
-				double effMCMu2 = SF_muon24->get_EfficiencyMC(muon_pt[iAmumu2candidate], muon_eta[iAmumu2candidate]);
+				double effMCMu2 = SF_muon->get_EfficiencyMC(muon_pt[iAmumu2candidate], muon_eta[iAmumu2candidate]);
 
 				double trigWeightData = effDataMu1 + effDataMu2 - effDataMu1 * effDataMu2;
 
